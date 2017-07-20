@@ -81,7 +81,7 @@ std::map<unsigned int, std::string> getBodyPartMapFromPoseModel(const op::PoseMo
   }
 }
 
-class RosImgSub
+class SkeletonDetection
 {
 private:
   ros::NodeHandle nh_;
@@ -92,16 +92,16 @@ private:
   ros::Publisher skeleton_pub;
   
 public:
-  RosImgSub(const std::string& image_topic): it_(nh_)
+  SkeletonDetection(const std::string& image_topic): it_(nh_)
   {
     // Subscribe to input video feed and publish output video feed
-    image_sub_ = it_.subscribe(image_topic, 1, &RosImgSub::convertImage, this);
+    image_sub_ = it_.subscribe(image_topic, 1, &SkeletonDetection::convertImage, this);
     cv_img_ptr_ = nullptr;
     image_pub_ = it_.advertise("/openpose_ros/debug_img", 1);
     skeleton_pub = nh_.advertise<openpose_ros_msgs::PersonDetections>("/openpose_ros/skeleton", 1000);
   }
 
-  ~RosImgSub(){}
+  ~SkeletonDetection(){}
 
   void convertImage(const sensor_msgs::ImageConstPtr& msg)
   {
@@ -175,7 +175,7 @@ int openPoseROSTutorial()
     poseRenderer.initializationOnThread();
 
     // Step 5 - Initialize the image subscriber
-    RosImgSub ris(FLAGS_camera_topic);
+    SkeletonDetection ris(FLAGS_camera_topic);
 
     int frame_count = 0;
     const std::chrono::high_resolution_clock::time_point timerBegin = std::chrono::high_resolution_clock::now();
