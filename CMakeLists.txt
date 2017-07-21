@@ -18,8 +18,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(CUDA REQUIRED)
 find_package(OpenCV REQUIRED)
 
-set(CAFFE_DIR /home/bjsk/publicWorkspace/dev/openpose/3rdparty/caffe)
-set(OPENPOSE_DIR /home/bjsk/publicWorkspace/dev/openpose)
+set(CAFFE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/openpose/3rdparty/caffe)
+set(OPENPOSE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/openpose)
 
 set(CAFFE_INCLUDE_DIRS ${CAFFE_DIR}/distribute/include)
 set(CAFFE_LINK_LIBRARY ${CAFFE_DIR}/distribute/lib/libcaffe.so)

@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<launch>
+  <param name="camera_topic" value="/camera/rgb/image_rect_color" />
+  <param name="resolution" value="640x480" />
+  <param name="net_resolution" value="656x368" />
+  <param name="model_pose" value="COCO" />
+  <param name="model_folder" value="$(find openpose_ros)/openpose/models/" />
+  <param name="num_gpu_start" value="0" />
+
+  <node pkg="openpose_ros" type="openpose_ros_node" name="openpose_ros_node" output="screen">
+
+  </node>
+</launch>
+
+
+
+
+
+
