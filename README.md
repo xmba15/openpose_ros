@@ -10,6 +10,7 @@ ROS package for [**OpenPose**](https://github.com/CMU-Perceptual-Computing-Lab/o
  - Output topic
    + Debug Image: /openpose_ros/debug_img
    <p align="center">
-    <img src="doc/media/pose.jpg", width="480">
+    <img src="doc/media/openpose.jpg", width="480">
    </p>
+   
    + Skeleton Information: /openpose_ros/skeleton
