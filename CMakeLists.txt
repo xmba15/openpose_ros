@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   gflags
   glog_catkin
+  openpose_ros_msgs
 )
 
 

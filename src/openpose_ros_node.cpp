@@ -216,25 +216,25 @@ int openPoseROSTutorial()
 		ROS_INFO("Person ID: %zu", person_idx);
 		// Initialize all bodyparts with nan
 		openpose_ros_msgs::PersonDetection person_msg;
-		person_msg.nose = getNANBodypart();
-		person_msg.neck = getNANBodypart();
-		person_msg.right_shoulder = getNANBodypart();
-		person_msg.right_elbow = getNANBodypart();
-		person_msg.right_wrist = getNANBodypart();
-		person_msg.left_shoulder = getNANBodypart();
-		person_msg.left_elbow = getNANBodypart();
-		person_msg.left_wrist = getNANBodypart();
-		person_msg.right_hip = getNANBodypart();
-		person_msg.right_knee = getNANBodypart();
-		person_msg.right_ankle = getNANBodypart();
-		person_msg.left_hip = getNANBodypart();
-		person_msg.left_knee = getNANBodypart();
-		person_msg.left_ankle = getNANBodypart();
-		person_msg.right_eye = getNANBodypart();
-		person_msg.left_eye = getNANBodypart();
-		person_msg.right_ear = getNANBodypart();
-		person_msg.left_ear = getNANBodypart();
-		person_msg.chest = getNANBodypart();
+		person_msg.Nose = getNANBodypart();
+		person_msg.Neck = getNANBodypart();
+		person_msg.RShoulder = getNANBodypart();
+		person_msg.RElbow = getNANBodypart();
+		person_msg.RWrist = getNANBodypart();
+		person_msg.LShoulder = getNANBodypart();
+		person_msg.LElbow = getNANBodypart();
+		person_msg.LWrist = getNANBodypart();
+		person_msg.RHip = getNANBodypart();
+		person_msg.RKnee = getNANBodypart();
+		person_msg.RAnkle = getNANBodypart();
+		person_msg.LHip = getNANBodypart();
+		person_msg.LKnee = getNANBodypart();
+		person_msg.LAnkle = getNANBodypart();
+		person_msg.REye = getNANBodypart();
+		person_msg.LEye = getNANBodypart();
+		person_msg.REar = getNANBodypart();
+		person_msg.LEar = getNANBodypart();
+		person_msg.Background = getNANBodypart();
 
 		for (size_t bodypart_idx = 0; bodypart_idx < num_bodyparts; bodypart_idx++)
 		  {
@@ -243,25 +243,25 @@ int openPoseROSTutorial()
 		    std::string body_part_string = g_bodypart_map[bodypart_idx];
 		    openpose_ros_msgs::BodypartDetection bodypart_detection = getBodyPartDetectionFromArrayAndIndex(poseKeypoints, final_idx);
 
-		    if (body_part_string == "Nose") person_msg.nose = bodypart_detection;
-		    else if (body_part_string == "Neck") person_msg.neck = bodypart_detection;
-		    else if (body_part_string == "RShoulder") person_msg.right_shoulder = bodypart_detection;
-		    else if (body_part_string == "RElbow") person_msg.right_elbow = bodypart_detection;
-		    else if (body_part_string == "RWrist") person_msg.right_wrist = bodypart_detection;
-		    else if (body_part_string == "LShoulder") person_msg.left_shoulder = bodypart_detection;
-		    else if (body_part_string == "LElbow") person_msg.left_elbow = bodypart_detection;
-		    else if (body_part_string == "LWrist") person_msg.left_wrist = bodypart_detection;
-		    else if (body_part_string == "RHip") person_msg.right_hip = bodypart_detection;
-		    else if (body_part_string == "RKnee") person_msg.right_knee = bodypart_detection;
-		    else if (body_part_string == "RAnkle") person_msg.right_ankle = bodypart_detection;
-		    else if (body_part_string == "LHip") person_msg.left_hip = bodypart_detection;
-		    else if (body_part_string == "LKnee") person_msg.left_knee = bodypart_detection;
-		    else if (body_part_string == "LAnkle") person_msg.left_ankle = bodypart_detection;
-		    else if (body_part_string == "REye") person_msg.right_eye = bodypart_detection;
-		    else if (body_part_string == "LEye") person_msg.left_eye = bodypart_detection;
-		    else if (body_part_string == "REar") person_msg.right_ear = bodypart_detection;
-		    else if (body_part_string == "LEar") person_msg.left_ear = bodypart_detection;
-		    else if (body_part_string == "Chest") person_msg.chest = bodypart_detection;
+		    if (body_part_string == "Nose") person_msg.Nose = bodypart_detection;
+		    else if (body_part_string == "Neck") person_msg.Neck = bodypart_detection;
+		    else if (body_part_string == "RShoulder") person_msg.RShoulder = bodypart_detection;
+		    else if (body_part_string == "RElbow") person_msg.RElbow = bodypart_detection;
+		    else if (body_part_string == "RWrist") person_msg.RWrist = bodypart_detection;
+		    else if (body_part_string == "LShoulder") person_msg.LShoulder = bodypart_detection;
+		    else if (body_part_string == "LElbow") person_msg.LElbow = bodypart_detection;
+		    else if (body_part_string == "LWrist") person_msg.LWrist = bodypart_detection;
+		    else if (body_part_string == "RHip") person_msg.RHip = bodypart_detection;
+		    else if (body_part_string == "RKnee") person_msg.RKnee = bodypart_detection;
+		    else if (body_part_string == "RAnkle") person_msg.RAnkle = bodypart_detection;
+		    else if (body_part_string == "LHip") person_msg.LHip = bodypart_detection;
+		    else if (body_part_string == "LKnee") person_msg.LKnee = bodypart_detection;
+		    else if (body_part_string == "LAnkle") person_msg.LAnkle = bodypart_detection;
+		    else if (body_part_string == "REye") person_msg.REye = bodypart_detection;
+		    else if (body_part_string == "LEye") person_msg.LEye = bodypart_detection;
+		    else if (body_part_string == "REar") person_msg.REar = bodypart_detection;
+		    else if (body_part_string == "LEar") person_msg.LEar = bodypart_detection;
+		    else if (body_part_string == "Background") person_msg.Background = bodypart_detection;
 		    else
 		      {
 			ROS_ERROR("Unknown bodypart %s, this should never happen!", body_part_string.c_str());
