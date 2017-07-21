@@ -17,6 +17,7 @@
 // OpenPose dependencies
 #include <openpose/headers.hpp>
 
+#include <openpose_ros_msgs/BodypartDetection.h>
 #include <openpose_ros_msgs/PeoplePose.h>
 #include <openpose_ros_msgs/PeoplePoseArray.h>
 
