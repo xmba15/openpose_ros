@@ -1,6 +1,7 @@
 #define USE_CAFFE
 
 #include <ros/ros.h>
+#include <ros/package.h>
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -21,15 +22,6 @@
 DEFINE_int32(logging_level,             4,              "The logging level. Integer in the range [0, 255]. 0 will output any log() message, while"
                                                         " 255 will not output any. Current OpenPose library messages are in the range 0-4: 1 for"
                                                         " low priority messages and 4 for important ones.");
-// Camera Topic
-DEFINE_string(camera_topic,             "/camera/rgb/image_rect_color",      "Image topic that OpenPose will process.");
-// OpenPose
-DEFINE_string(model_folder,             "/home/bjsk/publicWorkspace/dev/openpose/models/",      "Folder path (absolute or relative) where the models (pose, face, ...) are located.");
-DEFINE_string(model_pose,               "COCO",         "Model to be used (e.g. COCO, MPI, MPI_4_layers).");
-DEFINE_string(net_resolution,           "656x368",      "Multiples of 16. If it is increased, the accuracy usually increases. If it is decreased,"
-                                                        " the speed increases.");
-DEFINE_string(resolution,               "640x480",     "The image resolution (display and output). Use \"-1x-1\" to force the program to use the"
-                                                        " default images resolution.");
 DEFINE_int32(num_gpu_start,             0,              "GPU device start number.");
 DEFINE_double(scale_gap,                0.3,            "Scale gap between scales. No effect unless scale_number > 1. Initial scale is always 1."
                                                         " If you want to change the initial scale, you actually want to multiply the"
@@ -45,8 +37,24 @@ DEFINE_double(render_threshold,         0.05,           "Only estimated keypoint
 DEFINE_double(alpha_pose,               0.6,            "Blending factor (range 0-1) for the body part rendering. 1 will show it completely, 0 will"
                                                         " hide it. Only valid for GPU rendering.");
 
-
 std::map<unsigned int, std::string> g_bodypart_map;
+
+template <typename T>
+T getParam(const ros::NodeHandle& nh, const std::string& param_name, T default_value)
+{
+  T value;
+  if (nh.hasParam(param_name))
+    {
+      nh.getParam(param_name, value);
+    }
+  else
+    {
+      ROS_WARN_STREAM("Parameter '" << param_name << "' not found, defaults to '" << default_value << "'");
+      value = default_value;
+    }
+  return value;
+}
+
 
 openpose_ros_msgs::BodypartDetection getBodyPartDetectionFromArrayAndIndex(const op::Array<float>& array, size_t idx)
 {
@@ -92,13 +100,28 @@ private:
   ros::Publisher skeleton_pub;
   
 public:
-  SkeletonDetection(const std::string& image_topic): it_(nh_)
+  std::string image_topic;
+  std::string resolution;
+  std::string net_resolution;
+  std::string model_pose;
+  std::string model_folder;
+  int num_gpu_start;
+  
+  SkeletonDetection(): it_(nh_)
   {
-    // Subscribe to input video feed and publish output video feed
+    image_topic = getParam(nh_, "camera_topic", std::string("/camera/rgb/image_rect_color"));
     image_sub_ = it_.subscribe(image_topic, 1, &SkeletonDetection::convertImage, this);
     cv_img_ptr_ = nullptr;
     image_pub_ = it_.advertise("/openpose_ros/debug_img", 1);
     skeleton_pub = nh_.advertise<openpose_ros_msgs::PersonDetections>("/openpose_ros/skeleton", 1000);
+
+    resolution = getParam(nh_, "resolution", std::string("640x480"));
+    net_resolution = getParam(nh_, "net_resolution", std::string("656x368"));
+    model_pose = getParam(nh_, "model_pose", std::string("COCO"));
+    std::string package_path = ros::package::getPath("openpose_ros");
+    std::string folder_location = package_path + "/openpose/models/";
+    model_folder = getParam(nh_, "model_folder", std::string("/home/bjsk/publicWorkspace/dev/openpose/models/"));
+    num_gpu_start = getParam(nh_, "num_gpu_start", 0);
   }
 
   ~SkeletonDetection(){}
@@ -136,6 +159,9 @@ public:
 
 int openPoseROSTutorial()
 {
+    // Step 0 - Initialize the image subscriber
+    SkeletonDetection ris;
+
     op::log("OpenPose ROS Node", op::Priority::High);
     // ------------------------- INITIALIZATION -------------------------
     // Step 1 - Set logging level
@@ -146,13 +172,13 @@ int openPoseROSTutorial()
     op::log("", op::Priority::Low, __LINE__, __FUNCTION__, __FILE__);
     // Step 2 - Read Google flags (user defined configuration)
     // outputSize
-    const auto outputSize = op::flagsToPoint(FLAGS_resolution, "640x480");
+    const auto outputSize = op::flagsToPoint(ris.resolution, "640x480");
     // netInputSize
-    const auto netInputSize = op::flagsToPoint(FLAGS_net_resolution, "656x368");
+    const auto netInputSize = op::flagsToPoint(ris.net_resolution, "656x368");
     // netOutputSize
     const auto netOutputSize = netInputSize;
     // poseModel
-    const auto poseModel = op::flagsToPoseModel(FLAGS_model_pose);
+    const auto poseModel = op::flagsToPoseModel(ris.model_pose);
     g_bodypart_map = getBodyPartMapFromPoseModel(poseModel);
 
     // Check no contradictory flags enabled
@@ -166,7 +192,7 @@ int openPoseROSTutorial()
     op::CvMatToOpInput cvMatToOpInput{netInputSize, FLAGS_scale_number, (float)FLAGS_scale_gap};
     op::CvMatToOpOutput cvMatToOpOutput{outputSize};
     op::PoseExtractorCaffe poseExtractorCaffe{netInputSize, netOutputSize, outputSize, FLAGS_scale_number, poseModel,
-                                              FLAGS_model_folder, FLAGS_num_gpu_start};
+                                              ris.model_folder, ris.num_gpu_start};
     op::PoseRenderer poseRenderer{netOutputSize, outputSize, poseModel, nullptr, (float)FLAGS_render_threshold,
                                   !FLAGS_disable_blending, (float)FLAGS_alpha_pose};
     op::OpOutputToCvMat opOutputToCvMat{outputSize};
@@ -174,8 +200,6 @@ int openPoseROSTutorial()
     poseExtractorCaffe.initializationOnThread();
     poseRenderer.initializationOnThread();
 
-    // Step 5 - Initialize the image subscriber
-    SkeletonDetection ris(FLAGS_camera_topic);
 
     int frame_count = 0;
     const std::chrono::high_resolution_clock::time_point timerBegin = std::chrono::high_resolution_clock::now();
@@ -281,9 +305,7 @@ int openPoseROSTutorial()
             // ------------------------- SHOWING RESULT AND CLOSING -------------------------
             // Step 1 - Show results
 	    ris.publishImage(outputImage);
-            // cv::imshow("OpenPose ROS", outputImage);
-            // cv::waitKey(1);
-            // frame_count++;
+            frame_count++;
         }
         ros::spinOnce();
     }
