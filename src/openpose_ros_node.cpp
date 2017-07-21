@@ -5,6 +5,7 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+#include <geometry_msgs/Pose.h>
 
 #include <chrono>
 #include <string>
@@ -16,8 +17,8 @@
 // OpenPose dependencies
 #include <openpose/headers.hpp>
 
-#include <openpose_ros_msgs/GetPersons.h>
-#include <openpose_ros_msgs/PersonDetections.h>
+#include <openpose_ros_msgs/PeoplePose.h>
+#include <openpose_ros_msgs/PeoplePoseArray.h>
 
 DEFINE_int32(logging_level,             4,              "The logging level. Integer in the range [0, 255]. 0 will output any log() message, while"
                                                         " 255 will not output any. Current OpenPose library messages are in the range 0-4: 1 for"
@@ -53,7 +54,6 @@ T getParam(const ros::NodeHandle& nh, const std::string& param_name, T default_v
     }
   return value;
 }
-
 
 openpose_ros_msgs::BodypartDetection getBodyPartDetectionFromArrayAndIndex(const op::Array<float>& array, size_t idx)
 {
@@ -105,6 +105,7 @@ public:
   std::string model_pose;
   std::string model_folder;
   int num_gpu_start;
+  std_msgs::Header img_msg_header;
   
   SkeletonDetection(): it_(nh_)
   {
@@ -112,7 +113,7 @@ public:
     image_sub_ = it_.subscribe(image_topic, 1, &SkeletonDetection::convertImage, this);
     cv_img_ptr_ = nullptr;
     image_pub_ = it_.advertise("/openpose_ros/debug_img", 1);
-    skeleton_pub = nh_.advertise<openpose_ros_msgs::PersonDetections>("/openpose_ros/skeleton", 1000);
+    skeleton_pub = nh_.advertise<openpose_ros_msgs::PeoplePoseArray>("/openpose_ros/skeleton", 1000);
 
     resolution = getParam(nh_, "resolution", std::string("640x480"));
     net_resolution = getParam(nh_, "net_resolution", std::string("656x368"));
@@ -130,6 +131,7 @@ public:
     try
       {
 	cv_img_ptr_ = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+	img_msg_header = msg->header;
       }
     catch (cv_bridge::Exception& e)
       {
@@ -143,9 +145,9 @@ public:
     return cv_img_ptr_;
   }
 
-  void publishSkeleton(openpose_ros_msgs::PersonDetections person_detections_msg)
+  void publishSkeleton(openpose_ros_msgs::PeoplePoseArray people_pose_array_msg)
   {
-    skeleton_pub.publish(person_detections_msg);
+    skeleton_pub.publish(people_pose_array_msg);
   }
 
   void publishImage(cv::Mat img)
@@ -153,7 +155,7 @@ public:
     sensor_msgs::ImagePtr img_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", img).toImageMsg();
     image_pub_.publish(img_msg);
   }
-  
+
 };
 
 int openPoseROSTutorial()
@@ -234,30 +236,15 @@ int openPoseROSTutorial()
 	    int num_people = poseKeypoints.getSize(0);
 	    int num_bodyparts = poseKeypoints.getSize(1);
 	    ROS_INFO("num people: %d", num_people);
+
+	    openpose_ros_msgs::PeoplePoseArray people_pose_array_msg;
+	    people_pose_array_msg.header = ris.img_msg_header;
+
 	    for (size_t person_idx = 0; person_idx < num_people; person_idx++)
 	      {
 		ROS_INFO("Person ID: %zu", person_idx);
-		// Initialize all bodyparts with nan
-		openpose_ros_msgs::PersonDetection person_msg;
-		person_msg.Nose = getNANBodypart();
-		person_msg.Neck = getNANBodypart();
-		person_msg.RShoulder = getNANBodypart();
-		person_msg.RElbow = getNANBodypart();
-		person_msg.RWrist = getNANBodypart();
-		person_msg.LShoulder = getNANBodypart();
-		person_msg.LElbow = getNANBodypart();
-		person_msg.LWrist = getNANBodypart();
-		person_msg.RHip = getNANBodypart();
-		person_msg.RKnee = getNANBodypart();
-		person_msg.RAnkle = getNANBodypart();
-		person_msg.LHip = getNANBodypart();
-		person_msg.LKnee = getNANBodypart();
-		person_msg.LAnkle = getNANBodypart();
-		person_msg.REye = getNANBodypart();
-		person_msg.LEye = getNANBodypart();
-		person_msg.REar = getNANBodypart();
-		person_msg.LEar = getNANBodypart();
-		person_msg.Background = getNANBodypart();
+
+		openpose_ros_msgs::PeoplePose people_pose_msg;
 
 		for (size_t bodypart_idx = 0; bodypart_idx < num_bodyparts; bodypart_idx++)
 		  {
@@ -265,44 +252,30 @@ int openPoseROSTutorial()
 
 		    std::string body_part_string = g_bodypart_map[bodypart_idx];
 		    openpose_ros_msgs::BodypartDetection bodypart_detection = getBodyPartDetectionFromArrayAndIndex(poseKeypoints, final_idx);
+		    
+		    people_pose_msg.limb_names.push_back(body_part_string);
 
-		    if (body_part_string == "Nose") person_msg.Nose = bodypart_detection;
-		    else if (body_part_string == "Neck") person_msg.Neck = bodypart_detection;
-		    else if (body_part_string == "RShoulder") person_msg.RShoulder = bodypart_detection;
-		    else if (body_part_string == "RElbow") person_msg.RElbow = bodypart_detection;
-		    else if (body_part_string == "RWrist") person_msg.RWrist = bodypart_detection;
-		    else if (body_part_string == "LShoulder") person_msg.LShoulder = bodypart_detection;
-		    else if (body_part_string == "LElbow") person_msg.LElbow = bodypart_detection;
-		    else if (body_part_string == "LWrist") person_msg.LWrist = bodypart_detection;
-		    else if (body_part_string == "RHip") person_msg.RHip = bodypart_detection;
-		    else if (body_part_string == "RKnee") person_msg.RKnee = bodypart_detection;
-		    else if (body_part_string == "RAnkle") person_msg.RAnkle = bodypart_detection;
-		    else if (body_part_string == "LHip") person_msg.LHip = bodypart_detection;
-		    else if (body_part_string == "LKnee") person_msg.LKnee = bodypart_detection;
-		    else if (body_part_string == "LAnkle") person_msg.LAnkle = bodypart_detection;
-		    else if (body_part_string == "REye") person_msg.REye = bodypart_detection;
-		    else if (body_part_string == "LEye") person_msg.LEye = bodypart_detection;
-		    else if (body_part_string == "REar") person_msg.REar = bodypart_detection;
-		    else if (body_part_string == "LEar") person_msg.LEar = bodypart_detection;
-		    else if (body_part_string == "Background") person_msg.Background = bodypart_detection;
-		    else
-		      {
-			ROS_ERROR("Unknown bodypart %s, this should never happen!", body_part_string.c_str());
-		      }
+		    bodypart_detection.confidence >= 0 ? people_pose_msg.confidences.push_back(bodypart_detection.confidence) : people_pose_msg.confidences.push_back(NAN);
+		    geometry_msgs::Pose bodypart_pose;
+		    bodypart_pose.position.x = bodypart_detection.x;
+		    bodypart_pose.position.y = bodypart_detection.y;
+		    bodypart_pose.position.z = 0;
+		    people_pose_msg.poses.push_back(bodypart_pose);
 
 		    ROS_INFO("body part: %s", body_part_string.c_str());
 		    ROS_INFO("(x, y, confidence): %i, %i, %f", bodypart_detection.x, bodypart_detection.y, bodypart_detection.confidence);
 
 		  }
+		
+		people_pose_array_msg.poses.push_back(people_pose_msg);
 
-		openpose_ros_msgs::PersonDetections person_detections_msg;
-		person_detections_msg.detections.push_back(person_msg);
-		ris.publishSkeleton(person_detections_msg);		
 	      }
 
+	    ris.publishSkeleton(people_pose_array_msg);
 
             // ------------------------- SHOWING RESULT AND CLOSING -------------------------
             // Step 1 - Show results
+
 	    ris.publishImage(outputImage);
             frame_count++;
         }
