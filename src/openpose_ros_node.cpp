@@ -119,7 +119,7 @@ public:
     model_pose = getParam(nh_, "model_pose", std::string("COCO"));
     std::string package_path = ros::package::getPath("openpose_ros");
     std::string folder_location = package_path + "/openpose/models/";
-    model_folder = getParam(nh_, "model_folder", std::string("/home/bjsk/publicWorkspace/dev/openpose/models/"));
+    model_folder = getParam(nh_, "model_folder", folder_location);
     num_gpu_start = getParam(nh_, "num_gpu_start", 0);
   }
 
