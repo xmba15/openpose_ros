@@ -37,7 +37,8 @@ class WavingPerson:
         self.skeleton_topic = rospy.get_param("skeleton_topic", "/openpose_ros/skeleton")
         self.subscribe()
         self.img_pub_ = rospy.Publisher("/openpose_ros/waving_person/debug_img", Image, queue_size = 1)
-        
+        self.arms_score_threshold = rospy.get_param(
+                        '~arms_score_threshold', 0.25)
 
     def subscribe(self):
         queue_size = rospy.get_param('~queue_size', 10)
@@ -61,12 +62,41 @@ class WavingPerson:
             sub.unregister()
 
     def _cb(self, img_msg, pda_msg):
-        print "aaaaa"
-
         br = cv_bridge.CvBridge()
         img = br.imgmsg_to_cv2(img_msg, desired_encoding = "bgr8")
         
-        people_pose = pda_msg.poses
+        people_poses = pda_msg.poses
+
+        wrist_pose = None
+        elbow_pose = None
+        neck_pose = None
+        
+        has_waving_person = False
+
+        print len(people_poses)
+        for person_pose in people_poses:
+            for limb_prefix in ['R', 'L']:
+                try:
+                    wrist_index = person_pose.limb_names.index(limb_prefix + "Wrist")
+                    elbow_index = person_pose.limb_names.index(limb_prefix + "Elbow")
+                    neck_index = person_pose.limb_names.index("Neck")
+                except ValueError:
+                    continue
+                
+                if not np.all(np.array(person_pose.confidences)[[wrist_index, elbow_index, neck_index]] > self.arms_score_threshold):
+                    continue
+                
+                wrist_pose = person_pose.poses[wrist_index]
+                elbow_pose = person_pose.poses[elbow_index]
+                neck_pose = person_pose.poses[neck_index]
+                
+                if elbow_pose.position.y > wrist_pose.position.y:
+                    has_waving_person = True
+                    break
+
+            if (has_waving_person == True):
+                print "found out"
+                break
 
         debug_img_msg = br.cv2_to_imgmsg(img, encoding = "bgr8")
         debug_img_msg.header = img_msg.header
