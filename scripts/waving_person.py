@@ -37,8 +37,7 @@ class WavingPerson:
         self.skeleton_topic = rospy.get_param("skeleton_topic", "/openpose_ros/skeleton")
         self.subscribe()
         self.img_pub_ = rospy.Publisher("/openpose_ros/waving_person/debug_img", Image, queue_size = 1)
-        self.arms_score_threshold = rospy.get_param(
-                        '~arms_score_threshold', 0.25)
+        self.arms_score_threshold = rospy.get_param("~arms_score_threshold", 0.25)
         self.preGray = None
         
     def subscribe(self):
@@ -94,7 +93,7 @@ class WavingPerson:
                     elbow_pose = person_pose.poses[elbow_index]
                     neck_pose = person_pose.poses[neck_index]
                 
-                    if elbow_pose.position.y > wrist_pose.position.y:
+                    if (elbow_pose.position.y > wrist_pose.position.y):
 
                         wrist_elbow_dist = int(((wrist_pose.position.x - elbow_pose.position.x) ** 2
                                               + (wrist_pose.position.y - elbow_pose.position.y) ** 2) ** 0.5)
@@ -108,7 +107,9 @@ class WavingPerson:
                         flow = cv2.calcOpticalFlowFarneback(preRoi,
                                                             curRoi,
                                                             0.5, 3, 15, 3, 5, 1.2, 0)
-                        # print flow
+                        
+                        # print preRoi.shape
+
                         has_waving_person = True
                         cv2.rectangle(img, (x_tl, y_tl), (x_tl + width, y_tl + height), (0, 0, 255), 10)
                         break
