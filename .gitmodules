@@ -1,3 +1,0 @@
-[submodule "openpose"]
-	path = openpose
-	url = https://github.com/bajsk/openpose
