@@ -1,0 +1,20 @@
+<launch>
+  <arg name="USE_HSR" default="false" />
+
+  <arg name="input_data_path" default="/home/bjsk/publicWorkspace/data/handOver" />
+  <arg name="input_bag_files" default="waving_ba_notlooking_ishikura_3" />
+
+  <node pkg="rosbag" type="play" name="player" output="screen" args="-l $(arg input_data_path)/$(arg input_bag_files).bag" />
+
+  <param name="camera_topic" value="/camera/rgb/image_rect_color" />
+  <remap from="/camera/rgb/image_rect_color" to="/hsrb/head_rgbd_sensor/rgb/image_rect_color" if="$(arg USE_HSR)" />
+
+  <param name="resolution" value="640x480" />
+  <param name="net_resolution" value="320x160" />
+  <param name="model_pose" value="COCO" />
+  <param name="model_folder" value="$(find openpose_ros)/openpose/models/" />
+  <param name="num_gpu_start" value="0" />
+  <node pkg="openpose_ros" type="openpose_ros_node" name="openpose_ros_node" output="screen">
+  </node>
+
+</launch>
