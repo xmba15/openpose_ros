@@ -12,6 +12,8 @@
     + https://github.com/arnaudgelas/OpenCVExamples/tree/master/cvMat
   - Autonamy lab
     + https://github.com/AutonomyLab/autonomy_hri/tree/dev/autonomy_human	
+  - Object pose
+    + https://gist.github.com/tkelestemur
 
 # Related papers:
   - Head pose
