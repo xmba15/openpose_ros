@@ -13,6 +13,12 @@
   - Autonamy lab
     + https://github.com/AutonomyLab/autonomy_hri/tree/dev/autonomy_human	
 
+# Related papers:
+  - Head pose
+    + [Deep Head Pose: Gaze-Direction Estimation in Multimodal Video](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=7279167&tag=1)
+
 # Related vision labs
   - TUM
-    + https://github.com/tum-vision		
+    + https://github.com/tum-vision
+  - Bielefeld
+    + https://ni.www.techfak.uni-bielefeld.de/vision		
