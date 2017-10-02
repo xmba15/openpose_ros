@@ -6,5 +6,7 @@
 # Related Packages:  
   - Superpixel-based semantic segmentation
     + https://github.com/jhu-lcsr/sp_segmenter
+  - CNN head pose (mxnet)
+    + https://github.com/LaoDar/cnn_head_pose_estimator
 
         
