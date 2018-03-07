@@ -176,9 +176,11 @@ int openPoseROSTutorial()
     // outputSize
     const auto outputSize = op::flagsToPoint(ris.resolution, "640x480");
     // netInputSize
-    const auto netInputSize = op::flagsToPoint(ris.net_resolution, "656x368");
+    // const auto netInputSize = op::flagsToPoint(ris.net_resolution, "656x368");
+    const auto netInputSize = op::flagsToPoint(ris.net_resolution, "640x480");
     // netOutputSize
-    const auto netOutputSize = netInputSize;
+    // const auto netOutputSize = netInputSize;
+    const auto netOutputSize = outputSize;
     // poseModel
     const auto poseModel = op::flagsToPoseModel(ris.model_pose);
     g_bodypart_map = getBodyPartMapFromPoseModel(poseModel);
