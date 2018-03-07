@@ -41,10 +41,8 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}_node src/openpose_ros_node.cpp)
-add_executable(${PROJECT_NAME}_node_with_face_and_hands src/openpose_ros_node_with_face_and_hands.cpp)
 
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(${PROJECT_NAME}_node_with_face_and_hands ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
@@ -53,9 +51,4 @@ target_link_libraries(${PROJECT_NAME}_node
   ${OPENPOSE_LINK_LIBRARY}
 )
 
-target_link_libraries(${PROJECT_NAME}_node_with_face_and_hands
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
-  ${CAFFE_LINK_LIBRARY}
-  ${OPENPOSE_LINK_LIBRARY}
-)
+
